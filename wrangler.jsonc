@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "flarepulse-apm",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-02-14",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "flarepulse-db",
+      "database_id": "YOUR_D1_DATABASE_ID"
+    }
+  ],
+  "vars": {
+    "APP_NAME": "FlarePulse APM",
+    "APP_ENV": "production",
+    "ADMIN_USER": "admin"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "flarepulse/php-example-app",
+  "description": "Example PHP Application with official sentry-php SDK connecting to FlarePulse APM",
+  "type": "project",
+  "require": {
+    "php": ">=8.1",
+    "sentry/sentry": "^4.0",
+    "guzzlehttp/guzzle": "^7.8"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}
