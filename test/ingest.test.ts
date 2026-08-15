@@ -41,7 +41,7 @@ describe('FlarePulse APM Endpoints', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toContain('text/html');
     const html = await res.text();
-    expect(html).toContain('FlarePulse APM');
+    expect(html).toContain('apm-crash-monitor-serverless');
     expect(html).toContain('Sentry PHP');
   });
 });

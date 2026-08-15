@@ -1,7 +1,7 @@
 import { Env } from './types';
 
 /**
- * FlarePulse APM - Configuration Manager
+ * apm-crash-monitor-serverless - Configuration Manager
  */
 export class Config {
   static getAdminUser(env: Env): string {
@@ -13,12 +13,12 @@ export class Config {
   }
 
   static getJwtSecret(env: Env): Uint8Array {
-    const secret = env.JWT_SECRET || 'flarepulse-default-jwt-secret-minimum-32-chars-key-2025';
+    const secret = env.JWT_SECRET || 'apm-crash-monitor-serverless-jwt-secret-minimum-32-chars-key';
     return new TextEncoder().encode(secret);
   }
 
   static getAppName(env: Env): string {
-    return env.APP_NAME || 'FlarePulse APM';
+    return env.APP_NAME || 'apm-crash-monitor-serverless';
   }
 
   static getAppEnv(env: Env): string {

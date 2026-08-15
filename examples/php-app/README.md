@@ -1,34 +1,34 @@
-# FlarePulse APM - PHP Integration Guide
+# PHP Integration Guide
 
-This directory provides a working example of how to connect any PHP application (Vanilla PHP, Laravel, Symfony, WordPress, etc.) to **FlarePulse APM** using the official [`sentry/sentry`](https://github.com/getsentry/sentry-php) library (^4.x).
+This directory provides a working example of how to connect a PHP application (Laravel, Symfony, WordPress, or Vanilla PHP) to **apm-crash-monitor-serverless** using the official [`sentry/sentry`](https://github.com/getsentry/sentry-php) library (^4.x).
 
 ---
 
-## 1. Quick Start
+## Quick Start
 
-### Step 1: Install Dependencies
+### 1. Install Dependencies
 ```bash
 composer install
 ```
 
-### Step 2: Configure the DSN
-Obtain your project DSN from the FlarePulse APM Dashboard (e.g. `https://<public_key>@<your-worker-domain>/<project_id>`) and set it as an environment variable:
+### 2. Configure DSN
+Obtain your project DSN from the dashboard (e.g. `https://<public_key>@<your-worker-domain>/<project_id>`) and export it as an environment variable:
 
 ```bash
 export SENTRY_DSN="https://4a8c9b2e1f0d3a7e5b6c8a9d0e1f2a3b@localhost:8787/proj_default_php"
 ```
 
-### Step 3: Run the Test Script
+### 3. Run the Test Script
 ```bash
 php test-sentry.php
 ```
 
 ---
 
-## 2. Integration in Your PHP Application
+## PHP Application Integration
 
-### Basic Crash Reporting
-Add this to your application bootstrap or `index.php`:
+### Crash & Exception Reporting
+Add the initialization code to your bootstrap file or `index.php`:
 
 ```php
 require_once __DIR__ . '/vendor/autoload.php';
@@ -40,7 +40,7 @@ require_once __DIR__ . '/vendor/autoload.php';
     'release' => 'my-app@1.0.0'
 ]);
 
-// Any unhandled exceptions or fatal errors will automatically be sent to FlarePulse APM!
+// Any unhandled exceptions or fatal errors will automatically be sent to apm-crash-monitor-serverless
 ```
 
 ### Performance Monitoring (APM Tracing)
@@ -70,10 +70,9 @@ $transaction->finish();
 ```
 
 ### User Context & Breadcrumbs
-Enrich your error reports with user context and chronological breadcrumbs:
 
 ```php
-// Set user info
+// Set user context
 \Sentry\configureScope(function (\Sentry\State\Scope $scope): void {
     $scope->setUser([
         'id' => '12345',
@@ -83,7 +82,7 @@ Enrich your error reports with user context and chronological breadcrumbs:
     ]);
 });
 
-// Add breadcrumb
+// Add custom breadcrumbs
 \Sentry\addBreadcrumb(new \Sentry\Breadcrumb(
     \Sentry\Breadcrumb::LEVEL_INFO,
     \Sentry\Breadcrumb::TYPE_HTTP,

@@ -1,7 +1,7 @@
 {
-  "name": "flarepulse-apm",
+  "name": "apm-crash-monitor-serverless",
   "version": "1.0.0",
-  "description": "A 100% Cloudflare Serverless, Sentry-compatible APM and Crash Monitor",
+  "description": "Serverless APM and crash monitor backend for Cloudflare Workers, fully compatible with Sentry SDK",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
@@ -23,7 +23,7 @@
     "php",
     "hono"
   ],
-  "author": "FlarePulse Team",
+  "author": "mcontartesi",
   "license": "MIT",
   "dependencies": {
     "hono": "^4.7.2",

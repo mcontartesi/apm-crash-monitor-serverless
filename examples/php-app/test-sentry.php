@@ -15,7 +15,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 $dsn = getenv('SENTRY_DSN') ?: 'https://4a8c9b2e1f0d3a7e5b6c8a9d0e1f2a3b@localhost:8787/proj_default_php';
 
 echo "\n=======================================================\n";
-echo "⚡ FlarePulse APM - Sentry PHP SDK Integration Test\n";
+echo "apm-crash-monitor-serverless - Sentry PHP SDK Integration Test\n";
 echo "=======================================================\n";
 echo "Target DSN: {$dsn}\n\n";
 
@@ -104,8 +104,8 @@ try {
 // Flush queue to Cloudflare Worker
 $client = \Sentry\SentrySdk::getCurrentHub()->getClient();
 if ($client) {
-    echo "\nFlushing events to FlarePulse APM Serverless Worker...\n";
+    echo "\nFlushing events to apm-crash-monitor-serverless Worker...\n";
     $client->flush();
-    echo "✔ Successfully sent event and transaction to FlarePulse APM!\n";
-    echo "Check your dashboard at: http://localhost:8787/\n\n";
+    echo "Events and transactions sent to apm-crash-monitor-serverless.\n";
+    echo "Dashboard URL: http://localhost:8787/\n\n";
 }

@@ -1,9 +1,9 @@
 /**
- * FlarePulse APM - Embedded Web Dashboard
- * Modern, responsive, zero-dependency Dark UI served directly by Cloudflare Worker
+ * apm-crash-monitor-serverless - Embedded Web Dashboard
+ * Clean, dark UI served directly by Cloudflare Worker
  */
 
-export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
+export function renderDashboardHtml(appName = 'apm-crash-monitor-serverless'): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -72,17 +72,18 @@ export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
       align-items: center;
       gap: 12px;
       font-weight: 800;
-      font-size: 17px;
+      font-size: 16px;
       letter-spacing: -0.02em;
       color: #fff;
     }
     .brand-badge {
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-cyan));
-      color: #fff;
-      padding: 4px 8px;
+      background: var(--bg-surface-elevated);
+      color: var(--text-muted);
+      border: 1px solid var(--border-strong);
+      padding: 3px 8px;
       border-radius: var(--radius-sm);
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -106,7 +107,7 @@ export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
       transition: all 0.15s ease;
     }
     .nav-tab:hover { color: var(--text-main); background: var(--bg-surface-hover); }
-    .nav-tab.active { color: #fff; background: var(--accent-primary); shadow: 0 2px 8px rgba(99, 102, 241, 0.3); }
+    .nav-tab.active { color: #fff; background: var(--accent-primary); }
 
     .nav-actions {
       display: flex;
@@ -504,18 +505,6 @@ export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
       word-break: break-all;
       margin: 10px 0;
     }
-    .code-copy-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: var(--bg-surface-elevated);
-      color: #fff;
-      border: 1px solid var(--border-strong);
-      border-radius: var(--radius-sm);
-      padding: 4px 8px;
-      font-size: 11px;
-      cursor: pointer;
-    }
 
     .empty-state {
       text-align: center;
@@ -532,15 +521,15 @@ export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
   <!-- Top Navigation Bar -->
   <header class="navbar">
     <div class="nav-brand">
-      <span>⚡ FlarePulse APM</span>
-      <span class="brand-badge">Serverless</span>
+      <span>apm-crash-monitor-serverless</span>
+      <span class="brand-badge">Workers & D1</span>
     </div>
 
     <div class="nav-tabs" id="main-nav-tabs">
-      <button class="nav-tab active" data-tab="issues">🔥 Crashes & Issues</button>
-      <button class="nav-tab" data-tab="performance">⚡ APM Performance</button>
-      <button class="nav-tab" data-tab="projects">📦 Projects & DSN</button>
-      <button class="nav-tab" data-tab="docs">📖 PHP Integration</button>
+      <button class="nav-tab active" data-tab="issues">Crashes & Issues</button>
+      <button class="nav-tab" data-tab="performance">APM Performance</button>
+      <button class="nav-tab" data-tab="projects">Projects & DSN</button>
+      <button class="nav-tab" data-tab="docs">PHP Integration</button>
     </div>
 
     <div class="nav-actions">
@@ -548,7 +537,7 @@ export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
         <option value="">All Projects</option>
       </select>
       <button id="btn-create-project-modal" class="btn btn-primary btn-sm">+ New Project</button>
-      <button id="btn-logout" class="btn btn-secondary btn-sm" title="Log out">🔒 Logout</button>
+      <button id="btn-logout" class="btn btn-secondary btn-sm" title="Log out">Logout</button>
     </div>
   </header>
 
@@ -583,7 +572,6 @@ export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
     <section id="tab-issues" class="tab-content">
       <div class="filter-bar">
         <div class="search-input-wrap">
-          <span>🔍</span>
           <input type="text" id="issues-search" placeholder="Search exceptions, files, culprits..." />
         </div>
         <select id="issues-status-filter" class="select-dropdown">
@@ -598,7 +586,7 @@ export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
           <option value="fatal">Fatal</option>
           <option value="warning">Warnings</option>
         </select>
-        <button id="btn-refresh-issues" class="btn btn-secondary btn-sm">🔄 Refresh</button>
+        <button id="btn-refresh-issues" class="btn btn-secondary btn-sm">Refresh</button>
       </div>
 
       <!-- Issues List View -->
@@ -621,7 +609,7 @@ export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
 
       <!-- Single Issue Detail Drawer / View -->
       <div id="issue-detail-view" class="hidden">
-        <button id="btn-back-to-issues" class="btn btn-secondary btn-sm" style="margin-bottom: 16px;">← Back to Issues</button>
+        <button id="btn-back-to-issues" class="btn btn-secondary btn-sm" style="margin-bottom: 16px;">Back to Issues</button>
         <div class="table-container" style="padding: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
             <div>
@@ -630,9 +618,9 @@ export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
               <div id="detail-issue-culprit" class="issue-culprit" style="margin-top: 4px; font-size: 13px;"></div>
             </div>
             <div style="display: flex; gap: 8px;">
-              <button id="btn-issue-resolve" class="btn btn-success btn-sm">✔ Mark Resolved</button>
-              <button id="btn-issue-ignore" class="btn btn-secondary btn-sm">👁 Ignore</button>
-              <button id="btn-issue-delete" class="btn btn-danger btn-sm">🗑 Delete</button>
+              <button id="btn-issue-resolve" class="btn btn-success btn-sm">Mark Resolved</button>
+              <button id="btn-issue-ignore" class="btn btn-secondary btn-sm">Ignore</button>
+              <button id="btn-issue-delete" class="btn btn-danger btn-sm">Delete</button>
             </div>
           </div>
 
@@ -667,7 +655,6 @@ export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
     <section id="tab-performance" class="tab-content hidden">
       <div class="filter-bar">
         <div class="search-input-wrap">
-          <span>🔍</span>
           <input type="text" id="apm-search" placeholder="Search transaction routes (e.g. GET /api/users)..." />
         </div>
         <select id="apm-op-filter" class="select-dropdown">
@@ -675,7 +662,7 @@ export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
           <option value="http.server">HTTP Server</option>
           <option value="cli.worker">CLI / Worker</option>
         </select>
-        <button id="btn-refresh-apm" class="btn btn-secondary btn-sm">🔄 Refresh</button>
+        <button id="btn-refresh-apm" class="btn btn-secondary btn-sm">Refresh</button>
       </div>
 
       <!-- Transactions List -->
@@ -698,7 +685,7 @@ export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
 
       <!-- Transaction Waterfall Span Detail -->
       <div id="apm-detail-view" class="hidden">
-        <button id="btn-back-to-apm" class="btn btn-secondary btn-sm" style="margin-bottom: 16px;">← Back to Transactions</button>
+        <button id="btn-back-to-apm" class="btn btn-secondary btn-sm" style="margin-bottom: 16px;">Back to Transactions</button>
         <div class="table-container" style="padding: 20px;">
           <h2 id="apm-detail-title" style="color: #fff; font-size: 18px; font-weight: 800;"></h2>
           <div id="apm-detail-meta" style="color: var(--text-muted); font-size: 12px; margin-bottom: 16px;"></div>
@@ -727,7 +714,7 @@ export function renderDashboardHtml(appName = 'FlarePulse APM'): string {
       <div class="table-container" style="padding: 24px; max-width: 900px; margin: 0 auto;">
         <h2 style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 8px;">PHP Integration Guide (Sentry SDK ^4.x)</h2>
         <p style="color: var(--text-muted); margin-bottom: 20px;">
-          FlarePulse APM is 100% compatible with the official <strong style="color: #fff;">sentry-php</strong> SDK. Follow these steps to monitor crashes and APM traces in any PHP application.
+          apm-crash-monitor-serverless is fully compatible with the official <strong style="color: #fff;">sentry-php</strong> SDK.
         </p>
 
         <h3 style="color: var(--accent-cyan); font-size: 15px; margin-top: 16px;">1. Install Sentry PHP via Composer</h3>
@@ -767,8 +754,8 @@ $transaction->finish();
 </div>
 
         <h3 style="color: var(--accent-cyan); font-size: 15px; margin-top: 20px;">4. Test Live Crash Simulation</h3>
-        <p style="color: var(--text-muted); margin-bottom: 10px;">Trigger a test PHP crash event right now directly to your Worker endpoint:</p>
-        <button id="btn-test-crash-sim" class="btn btn-danger">💥 Send Simulated PHP Crash Event</button>
+        <p style="color: var(--text-muted); margin-bottom: 10px;">Trigger a test PHP crash event directly to your Worker endpoint:</p>
+        <button id="btn-test-crash-sim" class="btn btn-danger">Send Simulated PHP Crash Event</button>
       </div>
     </section>
 
@@ -780,7 +767,7 @@ $transaction->finish();
       <h3 style="color: #fff; font-size: 18px; font-weight: 700; margin-bottom: 16px;">Create New Monitoring Project</h3>
       <div class="form-group">
         <label>Project Name</label>
-        <input type="text" id="new-proj-name" class="form-control" placeholder="e.g. My Laravel API / PHP App" />
+        <input type="text" id="new-proj-name" class="form-control" placeholder="e.g. Production API / PHP App" />
       </div>
       <div class="form-group">
         <label>Platform</label>
@@ -801,9 +788,9 @@ $transaction->finish();
   <div id="modal-login" class="modal-overlay hidden">
     <div class="modal-card">
       <div style="text-align: center; margin-bottom: 20px;">
-        <span class="brand-badge" style="font-size: 13px;">⚡ FlarePulse APM</span>
+        <span class="brand-badge" style="font-size: 12px;">apm-crash-monitor-serverless</span>
         <h3 style="color: #fff; font-size: 20px; font-weight: 800; margin-top: 8px;">Admin Authentication</h3>
-        <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Enter the credentials configured in your environment (.env)</p>
+        <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Enter the credentials configured in your environment</p>
       </div>
       <div id="login-error" style="color: var(--accent-rose); font-size: 12px; margin-bottom: 12px;" class="hidden"></div>
       <div class="form-group">
@@ -814,7 +801,7 @@ $transaction->finish();
         <label>Password</label>
         <input type="password" id="login-password" class="form-control" placeholder="••••••••" />
       </div>
-      <button id="btn-submit-login" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Sign In to Dashboard</button>
+      <button id="btn-submit-login" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Sign In</button>
     </div>
   </div>
 
@@ -915,7 +902,7 @@ $transaction->finish();
             <div class="metric-label" style="margin-top: 10px;">SENTRY DSN</div>
             <div class="code-box">\${p.dsn}</div>
             <div style="display: flex; gap: 8px; margin-top: 12px;">
-              <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('\${p.dsn}'); alert('DSN Copied to clipboard!');">📋 Copy DSN</button>
+              <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('\${p.dsn}'); alert('DSN copied to clipboard');">Copy DSN</button>
             </div>
           </div>
         \`).join('');
@@ -954,7 +941,7 @@ $transaction->finish();
       const tbody = document.getElementById('issues-tbody');
 
       if (!data.issues || data.issues.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><h3>No Crashes Found 🎉</h3><p>Your PHP application is running cleanly without unhandled exceptions.</p></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><h3>No Crashes Found</h3><p>Your application is running without unhandled exceptions.</p></td></tr>';
         return;
       }
 
@@ -1116,7 +1103,7 @@ $transaction->finish();
       const tbody = document.getElementById('apm-tbody');
 
       if (!data.transactions || data.transactions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><h3>No APM Traces Recorded</h3><p>Instrument your PHP or Worker code with Sentry\\startTransaction to trace performance.</p></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><h3>No APM Traces Recorded</h3><p>Instrument your application with Sentry\\startTransaction to trace performance.</p></td></tr>';
         return;
       }
 
@@ -1193,7 +1180,7 @@ $transaction->finish();
     document.getElementById('btn-test-crash-sim').addEventListener('click', async () => {
       const btn = document.getElementById('btn-test-crash-sim');
       btn.disabled = true;
-      btn.textContent = '⏳ Sending simulated crash...';
+      btn.textContent = 'Sending simulated crash...';
 
       const simPayload = {
         event_id: crypto.randomUUID().replace(/-/g, ''),
@@ -1239,7 +1226,7 @@ $transaction->finish();
           body: envelopeText
         });
         if (res.ok) {
-          alert('Simulated crash successfully sent! Refreshing issues tab.');
+          alert('Simulated crash successfully sent. Refreshing issues tab.');
           document.querySelector('.nav-tab[data-tab="issues"]').click();
           loadStats();
         } else {
@@ -1249,7 +1236,7 @@ $transaction->finish();
         alert('Error sending: ' + e.message);
       } finally {
         btn.disabled = false;
-        btn.textContent = '💥 Send Simulated PHP Crash Event';
+        btn.textContent = 'Send Simulated PHP Crash Event';
       }
     });
 
@@ -1277,7 +1264,7 @@ $transaction->finish();
         closeCreateProjectModal();
         document.getElementById('new-proj-name').value = '';
         await loadProjects();
-        alert('Project created successfully!');
+        alert('Project created successfully');
       } else {
         alert('Failed to create project');
       }
@@ -1305,7 +1292,6 @@ $transaction->finish();
       };
     }
 
-    // Run checkAuth on startup
     checkAuth();
   </script>
 </body>

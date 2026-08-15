@@ -1,48 +1,46 @@
-# ⚡ FlarePulse APM (Cloudflare Serverless)
+# apm-crash-monitor-serverless
 
-> **Un APM y Monitor de Errores (Crash Monitor) 100% Serverless para Cloudflare, totalmente compatible con el SDK oficial de Sentry (`sentry-php` ^4.x, Sentry JS, Cloudflare Workers).**
-
-[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers%20%26%20D1-orange?logo=cloudflare)](https://workers.cloudflare.com/)
-[![Sentry Compatible](https://img.shields.io/badge/Sentry%20SDK-Compatible%20v4.x-purple?logo=sentry)](https://github.com/getsentry/sentry-php)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-Passing%20(13%2F13)-emerald)](https://github.com/)
+A serverless Application Performance Monitoring (APM) and crash monitoring backend built entirely on Cloudflare Workers and Cloudflare D1. Fully compatible with the official Sentry SDK protocol (`sentry-php` ^4.x, Sentry JavaScript, and Cloudflare Workers).
 
 ---
 
-## 🌟 Características Principales / Key Features
+## Overview
 
-- 🚀 **100% Serverless en Cloudflare**: Corre sobre **Cloudflare Workers** y **Cloudflare D1 (SQLite en el Edge)** con cero servidores que mantener y costos prácticamente nulos ($0 en el tier gratuito de Cloudflare).
-- 🔌 **Compatibilidad Nativa con Sentry**: Ingiere eventos y envelopes oficiales de Sentry (`/api/:projectId/envelope/`, `/api/:projectId/store/`, `/api/envelope/`). Compatible con la última versión de [`sentry/sentry: ^4.x`](https://github.com/getsentry/sentry-php).
-- 💥 **Crash Reporting & Smart Fingerprinting**: Agrupación inteligente de excepciones (Exception Type, Stacktrace In-App top frames, Culprit, Breadcrumbs, Tags, Contextos de entorno y superglobales de PHP).
-- ⚡ **APM Performance & Waterfall Spans**: Monitoreo de rendimiento en tiempo real, transacciones raíz y spans hijos (consultas SQL/Base de datos, llamadas HTTP externas, caching, renderizado) con cálculo de percentiles p50/p95.
-- 🖥️ **Dashboard Web Moderno Integrado**: Interfaz oscura de alto rendimiento servida directamente por el Worker sin dependencias externas pesadas. Visualizador interactivo de stacktraces, resaltado de líneas de código, línea de tiempo de breadcrumbs y gráfico de cascada (flamegraph).
-- 🔐 **Autenticación Protegida por `.env`**: Autenticación de administrador con usuario y contraseña definidos en variables de entorno / Worker Secrets, firmados con tokens JWT (`jose`).
-- 🤖 **Auto-Deploy con Cloudflare**: Configuración lista para Wrangler y flujo de CI/CD automatizado en GitHub Actions.
+`apm-crash-monitor-serverless` provides a lightweight, zero-maintenance alternative to self-hosted error tracking systems. It runs at the edge using Cloudflare Workers and stores relational crash data and APM traces in Cloudflare D1 (edge SQLite).
+
+### Key Capabilities
+
+- **Sentry Ingestion Protocol Compatibility**: Implements standard Sentry envelope and event ingestion endpoints (`/api/:projectId/envelope/`, `/api/:projectId/store/`, `/api/envelope/`). Works out of the box with standard Sentry DSN configurations.
+- **Crash Grouping & Fingerprinting**: Groups unhandled exceptions and crashes into issue threads using deterministic SHA-256 fingerprinting based on exception type, topmost in-app stack frame, and culprit.
+- **Stack Trace & Context Inspection**: Captures stack traces with source code snippet lines (pre/context/post context), chronologically ordered breadcrumbs, user context, runtime metadata (PHP version, OS, server), and superglobals.
+- **APM Performance Tracing**: Ingests Sentry transactions and child spans (database queries, external HTTP requests, cache hits) with duration tracking and latency metrics (p50/p95).
+- **Built-in Web Dashboard**: Fast single-page application served directly by the Cloudflare Worker. Includes an interactive stack trace viewer, breadcrumbs timeline, waterfall flamegraph for APM traces, and project management.
+- **Environment-based Authentication**: Secured with administrator credentials configured via environment variables / Worker secrets and verified using signed JWT session cookies.
 
 ---
 
-## 🏛️ Arquitectura del Sistema
+## Architecture
 
 ```
 +---------------------------------------------------------------------------------------+
-|                                    Aplicaciones Cliente                               |
-|  [ PHP App (sentry/sentry ^4.x) ]   [ JS / Frontend SDK ]   [ Cloudflare Workers SDK ] |
+|                                    Client Applications                                |
+|  [ PHP App (sentry/sentry ^4.x) ]   [ JS / Browser SDK ]   [ Cloudflare Workers SDK ] |
 +-------------------------------------------+-------------------------------------------+
                                             | Sentry Envelopes / Store POST
                                             v
 +---------------------------------------------------------------------------------------+
 |                       Cloudflare Worker (Hono REST & Ingestion Engine)               |
 |                                                                                       |
-|   /api/:projectId/envelope/  --> [ Parser de Envelopes Sentry ]                       |
-|   /api/:projectId/store/     --> [ Normalizador de Eventos ]                          |
+|   /api/:projectId/envelope/  --> [ Sentry Envelope Parser ]                           |
+|   /api/:projectId/store/     --> [ Sentry Event Normalizer ]                          |
 |                                      |                                                |
 |                     +----------------+----------------+                               |
 |                     |                                 |                               |
 |                     v                                 v                               |
-|           [ Motor de Crashes ]             [ Motor de APM ]                           |
-|           - Fingerprint & Agrupación       - Transacciones & Trazas                   |
-|           - Extracción de Stacktrace       - Spans en Cascada (Waterfall)             |
-|           - Breadcrumbs & Tags de PHP      - Métricas de Latencia p50/p95             |
+|           [ Crash Engine (Issues) ]        [ APM Engine (Spans) ]                     |
+|           - Fingerprinting & Grouping      - Transactions & Traces                    |
+|           - Stacktrace extraction          - Span Waterfall Timeline                  |
+|           - Breadcrumbs & Tags             - Latency percentiles (p50/p95)            |
 +-------------------------------------------+-------------------------------------------+
                                             |
                                             v
@@ -54,232 +52,240 @@
                                             |
                                             v
 +---------------------------------------------------------------------------------------+
-|                    Dashboard & Panel de Control (Cloudflare Worker UI)                |
-|   - Feed de errores en tiempo real y vista detallada de excepciones                   |
-|   - Timeline de breadcrumbs e inspección de contexto (Versión PHP, OS, Headers)       |
-|   - Explorador de APM con gráfico de cascada de spans interactivo                     |
-|   - Gestor de Proyectos y generador de DSN listo para copiar en PHP                   |
-|   - Autenticación con sesión JWT configurada vía .env                                 |
+|                    Dashboard & Admin Interface (Cloudflare Worker UI)                 |
+|   - Real-time Error Feed & Issue Detail with interactive Stacktrace                   |
+|   - Breadcrumbs timeline & Environment inspector (PHP runtime, headers, user context) |
+|   - APM Performance Explorer with Span Waterfall Flamegraph                           |
+|   - Project Manager & DSN Generator with copy-ready Sentry-PHP integration code       |
+|   - Basic / JWT Session Auth configured via .env / Worker Secrets                     |
 +---------------------------------------------------------------------------------------+
 ```
 
 ---
 
-## 🚀 Inicio Rápido / Quick Start
+## Quick Start
 
-### 1. Clonar el repositorio e instalar dependencias
+### 1. Prerequisites
+
+- Node.js 20+
+- npm 10+
+- (Optional) Cloudflare account for production deployment
+
+### 2. Installation
 
 ```bash
-git clone https://github.com/your-username/apm-crash-monitor-serverless.git
+git clone https://github.com/mcontartesi/apm-crash-monitor-serverless.git
 cd apm-crash-monitor-serverless
 npm install
 ```
 
-### 2. Configurar variables de entorno
+### 3. Environment Configuration
 
-Copia el archivo `.env.example` a `.dev.vars` (para desarrollo local) o `.env`:
+Copy `.env.example` to `.dev.vars` for local development:
 
 ```bash
 cp .env.example .dev.vars
 ```
 
-Edita los valores en `.dev.vars`:
+Update the configuration values:
 ```ini
 ADMIN_USER=admin
-ADMIN_PASSWORD=mi-password-seguro-123
+ADMIN_PASSWORD=change-me-to-a-secure-password
 JWT_SECRET=super-secret-jwt-key-minimum-32-characters-long
-APP_NAME=FlarePulse APM
+APP_NAME=apm-crash-monitor-serverless
 APP_ENV=development
 ```
 
-### 3. Inicializar la Base de Datos Cloudflare D1 Local
+### 4. Initialize Local D1 Database
 
 ```bash
 npm run d1:init-local
 ```
 
-### 4. Iniciar el servidor local
+### 5. Start Development Server
 
 ```bash
 npm run dev
 ```
 
-Abre tu navegador en `http://localhost:8787` e inicia sesión con el usuario y contraseña configurados.
+The dashboard will be available at `http://localhost:8787`. Log in using your configured credentials.
 
 ---
 
-## 🐘 Integración en PHP con `sentry/sentry` (^4.x)
+## PHP Integration (`sentry/sentry` ^4.x)
 
-### Paso 1: Instalar Sentry PHP vía Composer
-
-En tu proyecto PHP:
+### 1. Install Sentry PHP
 
 ```bash
 composer require sentry/sentry:^4.0
 ```
 
-### Paso 2: Inicializar el SDK con tu DSN
+### 2. Initialize in PHP Application
 
 ```php
 <?php
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-// Inicializa Sentry apuntando a tu instancia de FlarePulse APM
 \Sentry\init([
     'dsn' => 'https://4a8c9b2e1f0d3a7e5b6c8a9d0e1f2a3b@your-worker.workers.dev/proj_default_php',
-    'traces_sample_rate' => 1.0,      // Monitoreo de APM al 100%
+    'traces_sample_rate' => 1.0,
     'profiles_sample_rate' => 1.0,
     'environment' => 'production',
-    'release' => 'my-php-app@1.0.0',
+    'release' => 'my-app@1.0.0',
 ]);
 
-// Contexto de Usuario y Tags
+// Set user context and tags
 \Sentry\configureScope(function (\Sentry\State\Scope $scope): void {
     $scope->setUser([
-        'id' => 'user_123',
-        'email' => 'admin@empresa.com',
-        'username' => 'carlos_admin'
+        'id' => 'usr_1001',
+        'email' => 'admin@company.com',
+        'username' => 'sysadmin'
     ]);
     $scope->setTag('php_version', PHP_VERSION);
 });
 ```
 
-### Paso 3: Monitoreo de Rendimiento (APM Spans en Cascada)
+### 3. Performance Tracing (APM Waterfall Spans)
 
 ```php
-// Iniciar transacción de ruta
+// 1. Start root transaction
 $transactionContext = new \Sentry\Tracing\TransactionContext();
-$transactionContext->setName('POST /api/v1/pedidos');
+$transactionContext->setName('POST /api/v1/checkout');
 $transactionContext->setOp('http.server');
 $transaction = \Sentry\startTransaction($transactionContext);
 
-// Span hijo: Consulta a Base de Datos MySQL
+// 2. Add child span for database operation
 $dbSpanContext = new \Sentry\Tracing\SpanContext();
 $dbSpanContext->setOp('db.sql.query');
-$dbSpanContext->setDescription('INSERT INTO orders (user_id, total) VALUES (:user, :total)');
+$dbSpanContext->setDescription('SELECT balance FROM accounts WHERE user_id = :id');
 $dbSpan = $transaction->startChild($dbSpanContext);
 
-// ... Ejecutar consulta SQL ...
-usleep(30000); // 30ms
+// Execute query...
+usleep(25000); // 25ms
 $dbSpan->finish();
 
-// Span hijo: Llamada a pasarela de pagos externa
+// 3. Add child span for external payment gateway call
 $httpSpanContext = new \Sentry\Tracing\SpanContext();
 $httpSpanContext->setOp('http.client');
 $httpSpanContext->setDescription('POST https://api.stripe.com/v1/charges');
 $httpSpan = $transaction->startChild($httpSpanContext);
 
-// ... Llamada cURL ...
-usleep(85000); // 85ms
+// Execute HTTP request...
+usleep(60000); // 60ms
 $httpSpan->finish();
 
-// Finalizar transacción raíz
+// 4. Finish parent transaction
 $transaction->finish();
 ```
 
 ---
 
-## 🧪 Pruebas Automatizadas
+## Testing
 
-El proyecto cuenta con una suite completa de pruebas unitarias y de integración con **Vitest**:
+Run the automated test suite with Vitest:
 
 ```bash
 npm test
 ```
 
-### Pruebas cubiertas:
-- ✅ **Sentry Envelope Parser**: Decodificación de flujos multidocumento delimitados por saltos de línea (`\n`).
-- ✅ **Smart Fingerprinting**: Agrupación determinística SHA-256 de excepciones PHP y culprits.
-- ✅ **Event Normalizer**: Procesamiento de stacktraces (marcos pre/context/post), superglobales, tags y duraciones de spans en APM.
-- ✅ **Sentry Auth & DSN**: Validación de encabezados `X-Sentry-Auth`, parámetros de URL y seguridad JWT.
-- ✅ **API Ingestion Routes**: Respuestas estándar Sentry (`{ id: eventId }`) y salud del sistema.
+### Test Coverage
+
+- **Sentry Envelope Parser**: Decodes newline-delimited multi-part streams (`\n`).
+- **Fingerprinting Engine**: SHA-256 deterministic exception and stack frame grouping.
+- **Normalizer**: Stack frame context extraction, breadcrumbs formatting, and APM span duration calculations.
+- **Auth & DSN**: Sentry header parsing (`X-Sentry-Auth`), query parameter fallbacks, and JWT validation.
+- **Ingestion Endpoints**: Route validation and standard Sentry response verification.
 
 ---
 
-## ☁️ Despliegue en Producción (Cloudflare Workers)
+## Production Deployment
 
-### Opción A: Despliegue con Wrangler CLI
+### 1. Create Cloudflare D1 Database
 
-1. **Crea la base de datos D1 en Cloudflare:**
-   ```bash
-   npx wrangler d1 create flarepulse-db
-   ```
+```bash
+npx wrangler d1 create flarepulse-db
+```
 
-2. **Copia el `database_id` devuelto y pégalo en `wrangler.jsonc`:**
-   ```json
-   "d1_databases": [
-     {
-       "binding": "DB",
-       "database_name": "flarepulse-db",
-       "database_id": "tu-d1-database-id-aqui"
-     }
-   ]
-   ```
+### 2. Configure `wrangler.jsonc`
 
-3. **Aplica el esquema SQL en la base de datos remota:**
-   ```bash
-   npm run d1:init-remote
-   ```
+Update `wrangler.jsonc` with the returned `database_id`:
 
-4. **Establece las credenciales seguras (Secrets) en Cloudflare:**
-   ```bash
-   npx wrangler secret put ADMIN_USER
-   npx wrangler secret put ADMIN_PASSWORD
-   npx wrangler secret put JWT_SECRET
-   ```
+```json
+"d1_databases": [
+  {
+    "binding": "DB",
+    "database_name": "flarepulse-db",
+    "database_id": "<your-d1-database-id>"
+  }
+]
+```
 
-5. **Despliega el Worker:**
-   ```bash
-   npm run deploy
-   ```
+### 3. Apply D1 Database Migrations
 
-### Opción B: CI/CD Automático con GitHub Actions
+```bash
+npm run d1:init-remote
+```
 
-El repositorio incluye el flujo `.github/workflows/deploy.yml`. Solo necesitas agregar a los Secrets de tu repositorio en GitHub:
-- `CLOUDFLARE_API_TOKEN`
-- `CLOUDFLARE_ACCOUNT_ID`
+### 4. Set Production Secrets
+
+```bash
+npx wrangler secret put ADMIN_USER
+npx wrangler secret put ADMIN_PASSWORD
+npx wrangler secret put JWT_SECRET
+```
+
+### 5. Deploy Worker
+
+```bash
+npm run deploy
+```
 
 ---
 
-## 📁 Estructura del Proyecto
+## Project Structure
 
 ```
 apm-crash-monitor-serverless/
-├── .github/workflows/deploy.yml  # CI/CD para auto-deploy en Cloudflare
-├── schema/schema.sql             # Esquema D1 SQLite optimizado con índices
+├── deploy/
+│   └── workflows/
+│       └── deploy.yml            # CI/CD deployment workflow
+├── schema/
+│   └── schema.sql                # Cloudflare D1 SQL schema and indices
 ├── src/
-│   ├── index.ts                  # Punto de entrada del Cloudflare Worker (Hono)
-│   ├── config.ts                 # Manejador de configuración y credenciales
-│   ├── types/index.ts            # Definiciones de TypeScript para Sentry y D1
+│   ├── index.ts                  # Main Worker entry point (Hono router)
+│   ├── config.ts                 # Configuration manager
+│   ├── types/
+│   │   └── index.ts              # TypeScript definitions
 │   ├── db/
-│   │   └── client.ts             # Cliente D1 con transacciones y consultas por lotes
+│   │   └── client.ts             # D1 database client and queries
 │   ├── sentry/
-│   │   ├── auth.ts               # Validador de cabeceras Sentry DSN y X-Sentry-Auth
-│   │   ├── envelope.ts           # Parser de Envelopes Sentry (multi-item stream)
-│   │   ├── fingerprint.ts        # Algoritmo de agrupamiento inteligente de crashes
-│   │   └── normalizer.ts         # Normalizador de eventos PHP, stacktraces y spans
+│   │   ├── auth.ts               # Sentry DSN & auth parser
+│   │   ├── envelope.ts           # Sentry envelope parser
+│   │   ├── fingerprint.ts        # Crash fingerprinting and grouping
+│   │   └── normalizer.ts         # Event and APM trace normalizer
 │   ├── api/
-│   │   ├── auth.ts               # Autenticación de admin y cookies JWT
-│   │   ├── ingest.ts             # Endpoints oficiales de ingesta (/envelope, /store)
-│   │   ├── issues.ts             # API REST para incidencias y stacktraces
-│   │   ├── performance.ts        # API REST para transacciones y cascada de spans
-│   │   ├── projects.ts           # API REST para proyectos y generación de DSN
-│   │   └── stats.ts              # API REST para métricas y KPIs del dashboard
+│   │   ├── auth.ts               # Admin auth routes & JWT session handling
+│   │   ├── ingest.ts             # Sentry ingestion endpoints (/envelope, /store)
+│   │   ├── issues.ts             # Issues REST API
+│   │   ├── performance.ts        # APM performance REST API
+│   │   ├── projects.ts           # Projects REST API & DSN generation
+│   │   └── stats.ts              # KPI statistics REST API
 │   └── ui/
-│       └── html.ts               # Dashboard Web interactivo integrado
-├── examples/php-app/
-│   ├── composer.json             # Dependencia sentry/sentry ^4.0
-│   ├── test-sentry.php           # Script ejecutable de prueba en PHP
-│   └── README.md                 # Guía paso a paso para PHP
-├── test/                         # Suite de tests con Vitest
-├── wrangler.jsonc                # Configuración de Cloudflare Workers y D1
-├── tsconfig.json                 # Configuración de TypeScript
-└── README.md                     # Documentación completa
+│       └── html.ts               # Built-in dashboard SPA
+├── examples/
+│   └── php-app/
+│       ├── composer.json         # sentry/sentry ^4.0 dependencies
+│       ├── test-sentry.php       # PHP test and verification script
+│       └── README.md             # PHP integration guide
+├── test/                         # Vitest test suite
+├── wrangler.jsonc                # Cloudflare configuration
+├── tsconfig.json                 # TypeScript compiler configuration
+└── package.json                  # Dependencies and scripts
 ```
 
 ---
 
-## 📄 Licencia
+## License
 
-Este proyecto está bajo la licencia [MIT](LICENSE).
+MIT License. See [LICENSE](LICENSE) for details.
