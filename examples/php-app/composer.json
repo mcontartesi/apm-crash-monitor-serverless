@@ -1,6 +1,6 @@
 {
-  "name": "flarepulse/php-example-app",
-  "description": "Example PHP Application with official sentry-php SDK connecting to FlarePulse APM",
+  "name": "apm-crash-monitor-serverless/php-example-app",
+  "description": "Example PHP Application with official sentry-php SDK connecting to apm-crash-monitor-serverless",
   "type": "project",
   "require": {
     "php": ">=8.1",
