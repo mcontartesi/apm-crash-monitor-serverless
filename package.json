@@ -26,7 +26,7 @@
   "author": "mcontartesi",
   "license": "MIT",
   "dependencies": {
-    "hono": "^4.7.2",
+    "hono": "^4.13.5",
     "jose": "^6.0.8"
   },
   "devDependencies": {
